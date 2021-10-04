@@ -4,11 +4,10 @@ import styles from "./ContactsList.module.css";
 
 const { listWrap, listItem, name, number, btn } = styles;
 
-const ContactsList = ({
-  contactsDataToRender: { title, contacts },
-  deleteContact,
-  dataUI: { deleteBtn, noDataToRender },
-}) => {
+const ContactsList = ({ contactsDataToRender, deleteContact, dataUI }) => {
+  const { deleteBtn, noDataToRender } = dataUI;
+  const { title, contacts } = contactsDataToRender;
+
   return contacts.length ? (
     <>
       <p>{title}</p>
@@ -36,21 +35,21 @@ const ContactsList = ({
 };
 
 ContactsList.propTypes = {
-  deleteContact: PropTypes.func,
+  deleteContact: PropTypes.func.isRequired,
   contactsDataToRender: PropTypes.shape({
-    title: PropTypes.string,
+    title: PropTypes.string.isRequired,
     contacts: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.string,
         name: PropTypes.string,
         number: PropTypes.string,
       })
-    ),
-  }),
+    ).isRequired,
+  }).isRequired,
   dataUI: PropTypes.shape({
-    deleteBtn: PropTypes.string,
-    noDataToRender: PropTypes.string,
-  }),
+    deleteBtn: PropTypes.string.isRequired,
+    noDataToRender: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default ContactsList;

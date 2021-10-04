@@ -1,12 +1,12 @@
 import React from "react";
 import { nanoid } from "nanoid";
 import PropTypes from "prop-types";
-import styles from "./Filter.module.css";
+import { wrap } from "./Filter.module.css";
 
 const Filter = ({ handleChange, filter, inputSearch }) => {
   const findContactId = nanoid();
   return (
-    <div className={styles.wrap}>
+    <div className={wrap}>
       <label htmlFor={findContactId}>{inputSearch}</label>
       <input
         id={findContactId}
@@ -24,9 +24,9 @@ const Filter = ({ handleChange, filter, inputSearch }) => {
 };
 
 Filter.propTypes = {
-  handleChange: PropTypes.func,
-  filter: PropTypes.string,
-  inputSearch: PropTypes.string,
+  handleChange: PropTypes.func.isRequired,
+  filter: PropTypes.string.isRequired,
+  inputSearch: PropTypes.string.isRequired,
 };
 
 export default Filter;

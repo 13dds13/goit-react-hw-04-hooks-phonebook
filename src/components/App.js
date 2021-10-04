@@ -1,11 +1,12 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import ContactForm from "./contactForm/ContactForm";
 import Filter from "./filter/Filter";
 import ContactsList from "./contactsList/ContactsList";
 import styles from "./container/Container.module.css";
-import { stateInitialData, storageKey } from "../data/initialData.json";
+import { APP_INITIAL_DATA, storageKey } from "../data/initialData.json";
 import dataUI from "../data/dataUI.json";
+import getDataFromStorage from "../service/storageService";
 
 const {
   alertMsg,
@@ -21,54 +22,46 @@ const {
   noDataToRender,
 } = dataUI;
 
-class App extends Component {
-  state = { ...stateInitialData };
+const App = () => {
+  const [state, setState] = useState({ ...APP_INITIAL_DATA });
+  const { contacts, filter } = state;
 
-  componentDidMount() {
-    const dataFromStorage = localStorage.getItem(storageKey);
-    if (!dataFromStorage) {
-      return;
-    }
-    const parsedData = JSON.parse(dataFromStorage);
-    this.setState({ contacts: [...parsedData] });
-  }
+  useEffect(() => {
+    const dataFromStorage = getDataFromStorage();
+    if (!dataFromStorage) return;
+    setState((prev) => ({ ...prev, contacts: [...dataFromStorage] }));
+  }, []);
 
-  componentDidUpdate(prevState) {
-    const prevContacts = prevState.contacts;
-    const currentContacts = this.state.contacts;
-    const wasChanges = prevContacts !== currentContacts;
-    if (wasChanges) {
-      const dataToStorage = JSON.stringify(currentContacts);
-      localStorage.setItem(storageKey, dataToStorage);
-    }
-  }
+  useEffect(() => {
+    const dataToStorage = JSON.stringify(contacts);
+    localStorage.setItem(storageKey, dataToStorage);
+  }, [contacts]);
 
-  handleChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    this.setState({ [name]: value });
+    setState((prev) => ({ ...prev, [name]: value }));
   };
 
-  checkForDoublingContacts = (newName) => {
-    const isAlreadyInContacts = this.state.contacts.find(
-      (item) => item.name.toLowerCase() === newName.toLowerCase()
+  const checkIsDoublingContacts = (newName) => {
+    const isAlreadyInContacts = contacts.find(
+      ({ name }) => name.toLowerCase() === newName.toLowerCase()
     );
-
     if (isAlreadyInContacts) {
       alert(`${newName} ${alertMsg}`);
-      return;
+      return isAlreadyInContacts;
     }
-
-    return !isAlreadyInContacts;
+    return isAlreadyInContacts;
   };
 
-  addNewContact = (name, number) => {
-    const canAddContact = this.checkForDoublingContacts(name);
+  const addNewContact = (name, number) => {
+    const isAlreadyInContacts = checkIsDoublingContacts(name);
 
-    if (!canAddContact) {
+    if (isAlreadyInContacts) {
       return;
     }
 
-    this.setState((prev) => ({
+    setState((prev) => ({
+      ...prev,
       contacts: [
         ...prev.contacts,
         {
@@ -79,54 +72,55 @@ class App extends Component {
       ],
     }));
 
-    return true;
+    return !isAlreadyInContacts;
   };
 
-  deleteContact = (contactToDelete) => {
-    const filteredContacts = this.state.contacts.filter(
+  const deleteContact = (contactToDelete) => {
+    const filteredContacts = contacts.filter(
       ({ name }) => name !== contactToDelete
     );
-    this.setState({ contacts: [...filteredContacts] });
+    setState((prev) => ({ ...prev, contacts: [...filteredContacts] }));
   };
 
-  contactsToRender = ({ contacts, filter }) => {
-    if (!filter) return { contacts, title: `${allContacts}` };
+  const contactsToRender = ({ contacts, filter }) => {
+    if (!filter) {
+      return { contacts, title: `${allContacts}` };
+    }
 
-    const filteredContacts = contacts.filter((item) =>
-      item.name.toLowerCase().includes(filter.toLowerCase())
+    const filteredContacts = contacts.filter(({ name }) =>
+      name.toLowerCase().includes(filter.toLowerCase())
     );
 
     return { contacts: filteredContacts, title: `${search}` };
   };
 
-  render() {
-    const { container, title } = styles;
+  const { container, title } = styles;
+  const contactsDataToRender = contactsToRender(state);
 
-    return (
-      <div className={container}>
-        <h2 className={title}>{titleMain}</h2>
+  return (
+    <div className={container}>
+      <h2 className={title}>{titleMain}</h2>
 
-        <ContactForm
-          dataUI={{ inputName, inputTel, submitBtn }}
-          addNewContact={this.addNewContact}
-        />
+      <ContactForm
+        dataUI={{ inputName, inputTel, submitBtn }}
+        addNewContact={addNewContact}
+      />
 
-        <h2 className={title}>{titleSecondary}</h2>
+      <h2 className={title}>{titleSecondary}</h2>
 
-        <Filter
-          inputSearch={inputSearch}
-          filter={this.state.filter}
-          handleChange={this.handleChange}
-        />
+      <Filter
+        inputSearch={inputSearch}
+        filter={filter}
+        handleChange={handleChange}
+      />
 
-        <ContactsList
-          contactsDataToRender={this.contactsToRender(this.state)}
-          deleteContact={this.deleteContact}
-          dataUI={{ deleteBtn, noDataToRender }}
-        />
-      </div>
-    );
-  }
-}
+      <ContactsList
+        contactsDataToRender={contactsDataToRender}
+        deleteContact={deleteContact}
+        dataUI={{ deleteBtn, noDataToRender }}
+      />
+    </div>
+  );
+};
 
 export default App;
