@@ -67,12 +67,12 @@ const ContactForm = ({ addNewContact, dataUI }) => {
 };
 
 ContactForm.propTypes = {
-  addNewContact: PropTypes.func,
+  addNewContact: PropTypes.func.isRequired,
   dataUI: PropTypes.shape({
-    inputName: PropTypes.string,
-    inputTel: PropTypes.string,
-    submitBtn: PropTypes.string,
-  }),
+    inputName: PropTypes.string.isRequired,
+    inputTel: PropTypes.string.isRequired,
+    submitBtn: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default ContactForm;
