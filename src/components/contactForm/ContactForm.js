@@ -22,9 +22,9 @@ const ContactForm = ({ addNewContact, dataUI }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const wasAddedNewContact = addNewContact(name, number);
+    const wasAlreadyInContacts = addNewContact(name, number);
 
-    if (!wasAddedNewContact) return;
+    if (wasAlreadyInContacts) return;
 
     resetStateData();
   };

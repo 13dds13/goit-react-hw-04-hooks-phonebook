@@ -23,13 +23,13 @@ const {
 } = dataUI;
 
 const App = () => {
-  const [state, setState] = useState({ ...APP_INITIAL_DATA });
-  const { contacts, filter } = state;
+  const [contacts, setContact] = useState(APP_INITIAL_DATA.contacts);
+  const [filter, setFilter] = useState(APP_INITIAL_DATA.filter);
 
   useEffect(() => {
     const dataFromStorage = getDataFromStorage();
     if (!dataFromStorage) return;
-    setState((prev) => ({ ...prev, contacts: [...dataFromStorage] }));
+    setContact([...dataFromStorage]);
   }, []);
 
   useEffect(() => {
@@ -38,18 +38,14 @@ const App = () => {
   }, [contacts]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setState((prev) => ({ ...prev, [name]: value }));
+    const { value } = e.target;
+    setFilter(value);
   };
 
   const checkIsDoublingContacts = (newName) => {
-    const isAlreadyInContacts = contacts.find(
+    const isAlreadyInContacts = contacts.some(
       ({ name }) => name.toLowerCase() === newName.toLowerCase()
     );
-    if (isAlreadyInContacts) {
-      alert(`${newName} ${alertMsg}`);
-      return isAlreadyInContacts;
-    }
     return isAlreadyInContacts;
   };
 
@@ -57,32 +53,30 @@ const App = () => {
     const isAlreadyInContacts = checkIsDoublingContacts(name);
 
     if (isAlreadyInContacts) {
-      return;
+      alert(`${name} ${alertMsg}`);
+      return isAlreadyInContacts;
     }
 
-    setState((prev) => ({
+    setContact((prev) => [
       ...prev,
-      contacts: [
-        ...prev.contacts,
-        {
-          name,
-          id: nanoid(),
-          number,
-        },
-      ],
-    }));
+      {
+        name,
+        id: nanoid(),
+        number,
+      },
+    ]);
 
-    return !isAlreadyInContacts;
+    return isAlreadyInContacts;
   };
 
   const deleteContact = (contactToDelete) => {
     const filteredContacts = contacts.filter(
       ({ name }) => name !== contactToDelete
     );
-    setState((prev) => ({ ...prev, contacts: [...filteredContacts] }));
+    setContact([...filteredContacts]);
   };
 
-  const contactsToRender = ({ contacts, filter }) => {
+  const contactsToRender = (contacts, filter) => {
     if (!filter) {
       return { contacts, title: `${allContacts}` };
     }
@@ -95,7 +89,7 @@ const App = () => {
   };
 
   const { container, title } = styles;
-  const contactsDataToRender = contactsToRender(state);
+  const contactsDataToRender = contactsToRender(contacts, filter);
 
   return (
     <div className={container}>
